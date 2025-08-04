@@ -11,6 +11,7 @@
 import ecs100.*;
 import java.awt.Color;
 import javax.swing.JButton;
+import java.util.*;
 
 /**
  *  Simple 'Minesweeper' program.
@@ -53,6 +54,7 @@ public class MineSweeper {
         UI.addButton("New Game", this::makeGrid);
         this.expButton = UI.addButton("Expose", ()->setMarking(false));
         this.mrkButton = UI.addButton("Mark", ()->setMarking(true));
+        UI.addButton("AI Helper", this::AIHelper);
 
         UI.addButton("Quit", UI::quit);
         UI.setDivider(0.0);
@@ -80,7 +82,7 @@ public class MineSweeper {
     public void mark(int row, int col){
         /*# YOUR CODE HERE */
         Square square = squares[row][col];
-        if(square.isExposed())
+        if(square.isExposed() || hasWon())
             return;
         
         if(square.isMarked())
@@ -104,12 +106,14 @@ public class MineSweeper {
         /*# YOUR CODE HERE */
         Square square = squares[row][col];
         
-        if(square.isExposed() || square.isMarked())
+        if(square.isExposed() || square.isMarked() || hasWon())
             return;   
-        else if(square.hasMine())
+        else if(square.hasMine()){
             drawLose();
+            return;
+        }
         else
-            square.setExposed();            
+            exposeSquareAt(row, col);            
         if (hasWon())
             drawWin();
             
@@ -129,7 +133,21 @@ public class MineSweeper {
      */
     public void exposeSquareAt(int row, int col){
         /*# YOUR CODE HERE */
-
+        Square square = squares[row][col];
+        
+        if(square.isExposed())
+            return;   
+        
+        square.setExposed();
+        square.draw(row, col);
+        
+        if(square.getAdjacentMines() == 0){
+            for (int r=Math.max(row-1,0); r<Math.min(row+2, ROWS); r++){
+                    for (int c=Math.max(col-1,0); c<Math.min(col+2, COLS); c++){
+                        tryExpose(r, c);
+                    }
+                }
+        }
     }
 
     /**
@@ -140,8 +158,42 @@ public class MineSweeper {
      */
     public boolean hasWon(){
         /*# YOUR CODE HERE */
-
-        return false;
+        boolean result = true;
+        for(int x = 0; x < ROWS; x++){
+            for(int y = 0; y < COLS; y++){
+                Square square = squares[x][y];
+                if(!square.isExposed() && !square.hasMine())
+                    result = false;
+            }
+        }
+        return result;
+    }
+    
+    public void AIHelper(){
+        int[][] visableState = getVisibleState();
+        
+        List<Square> mineSquares = new ArrayList<Square>();
+        for(int x = 0; x < ROWS; x++){
+            for(int y = 0; y < COLS; y++){
+                int mines = visableState[x][y];
+                if(mines > 0){
+                    UI.println(mines);
+                    List<Square> ajacentUnrevealedSquares = new ArrayList<Square>();
+                    for (int r=Math.max(x-1,0); r<Math.min(x+2, ROWS); r++){
+                        for (int c=Math.max(y-1,0); c<Math.min(y+2, COLS); c++){
+                            if(visableState[r][c] == -1);
+                                ajacentUnrevealedSquares.add(squares[c][r]);
+                        }
+                    }
+                    UI.println(ajacentUnrevealedSquares.size());
+                    if(mines == ajacentUnrevealedSquares.size())
+                        mineSquares.addAll(ajacentUnrevealedSquares);
+                }
+                
+            }
+        }
+        
+        UI.println(mineSquares);
     }
 
     // completed methods

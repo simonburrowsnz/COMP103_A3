@@ -173,27 +173,44 @@ public class MineSweeper {
         int[][] visableState = getVisibleState();
         
         List<Square> mineSquares = new ArrayList<Square>();
+        
+        
+        for(int[] square: getSquaresWithAjacentMines()){
+            int x = square[0];
+            int y = square[1];
+            List<Square> ajacentUnrevealedSquares = new ArrayList<Square>();
+            for (int r=Math.max(x-1,0); r<Math.min(x+2, ROWS); r++){
+                for (int c=Math.max(y-1,0); c<Math.min(y+2, COLS); c++){
+                    if(visableState[r][c] == -1);
+                        ajacentUnrevealedSquares.add(squares[c][r]);
+                }
+            }
+            UI.println(ajacentUnrevealedSquares.size());
+            if(visableState[x][y] == ajacentUnrevealedSquares.size())
+                mineSquares.addAll(ajacentUnrevealedSquares);
+        }
+
+           
+        UI.println(mineSquares);
+    }
+    
+    public Set<int[]> getSquaresWithAjacentMines(){
+        Set<int[]> result = new HashSet<int[]>();
+        
+        int[][] visableState = getVisibleState();
+    
+
         for(int x = 0; x < ROWS; x++){
             for(int y = 0; y < COLS; y++){
                 int mines = visableState[x][y];
-                if(mines > 0){
-                    UI.println(mines);
-                    List<Square> ajacentUnrevealedSquares = new ArrayList<Square>();
-                    for (int r=Math.max(x-1,0); r<Math.min(x+2, ROWS); r++){
-                        for (int c=Math.max(y-1,0); c<Math.min(y+2, COLS); c++){
-                            if(visableState[r][c] == -1);
-                                ajacentUnrevealedSquares.add(squares[c][r]);
-                        }
-                    }
-                    UI.println(ajacentUnrevealedSquares.size());
-                    if(mines == ajacentUnrevealedSquares.size())
-                        mineSquares.addAll(ajacentUnrevealedSquares);
+                if(mines < 0){
+                    int[] toAdd = {x, y};
+                    result.add(toAdd);
                 }
-                
             }
         }
         
-        UI.println(mineSquares);
+        return result;
     }
 
     // completed methods

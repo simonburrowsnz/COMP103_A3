@@ -185,7 +185,7 @@ public class MineSweeper {
                         ajacentUnrevealedSquares.add(squares[c][r]);
                 }
             }
-            UI.println(ajacentUnrevealedSquares.size());
+            //UI.println(ajacentUnrevealedSquares.size());
             if(visableState[x][y] == ajacentUnrevealedSquares.size())
                 mineSquares.addAll(ajacentUnrevealedSquares);
         }
